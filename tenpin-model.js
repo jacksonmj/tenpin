@@ -68,7 +68,20 @@ tenpin.model.Player.prototype.totalScore = function(){
 // startFrame must be an instance of tenpin.model.PlayerFrame and must be one of the frames for this player
 // maxBalls is the maximum length of the array (if fewer than maxBalls have been thrown from startFrame onwards, the array will be shorter)
 tenpin.model.Player.prototype.getBallScores = function(startFrame, maxBalls){
-
+	var frame = startFrame;
+	var balls = [];
+	while (frame && balls.length<maxBalls)
+	{
+		var len = frame.ballsThrown();
+		for (var i=1; i<=len; i++)
+		{
+			balls.push(frame.ball(i));
+			if (balls.length>=maxBalls)
+				return balls;
+		}
+		frame = frame.nextFrame();
+	}
+	return balls;
 };
 
 // Get frame number (1-indexed) from frame object
@@ -113,9 +126,16 @@ tenpin.model.InvalidBallScoreError.prototype.toString = function() {
 }
 
 tenpin.model.PlayerFrame = function(player){
-	this.ballScores = [null,null];
 	this.player = player;
+	this._initCallbacks();
+	this.clear();
 };
+
+tenpin.model.PlayerFrame.prototype.clear = function(){
+	this.ballScores = [null,null];
+	return this;
+}
+
 tenpin.model.PlayerFrame.prototype._initCallbacks = function(){
 		this.callbacks = this.callbacks || {};
 	this.callbacks.ballScoreChanged = new tenpin.Callbacks();
@@ -125,21 +145,24 @@ tenpin.model.PlayerFrame.prototype._initCallbacks = function(){
 // get total score from this frame (pins knocked down plus any bonuses)
 tenpin.model.PlayerFrame.prototype.score = function(){
 	var score = this.pinsSum();
-	// TODO
+	if (this.isStrike())
+		score += tenpin.arraySum(this.player.getBallScores(this.nextFrame(),2));
+	else if (this.isSpare())
+		score += tenpin.arraySum(this.player.getBallScores(this.nextFrame(),1));
 	return score;
 };
 
 // get total number of pins knocked down in this frame
 tenpin.model.PlayerFrame.prototype.pinsSum = function(){
-	return this.ballScores[0]+this.ballScores[1];
+	return tenpin.arraySum(this.ballScores);
 };
 
 // return true if this frame was a spare
 tenpin.model.PlayerFrame.prototype.isSpare = function(){
-	return (!this.isStrike() && this.pinsSum() === 10);
+	return (!this.isStrike() && this.ballScores[0]+this.ballScores[1] === 10);
 };
 
-// return true if this frame was a strike
+// return true if the first ball was a strike
 tenpin.model.PlayerFrame.prototype.isStrike = function(){
 	return (this.ballScores[0] === 10);
 };
@@ -155,11 +178,19 @@ tenpin.model.PlayerFrame.prototype._checkBallScores = function(ballScores){
 
 // get or set the score for a particular ball (score == number of pins knocked down with that ball)
 // whichBall is 1-indexed
-// omit newScore to get the score
-tenpin.model.PlayerFrame.prototype.ballScore = function(whichBall, newScore){
+// omit newScore to get the score, newScore=null to clear score
+tenpin.model.PlayerFrame.prototype.ball = function(whichBall, newScore){
+	if (+whichBall<1 || +whichBall>this.ballScores.length)
+		throw "Invalid ball number";
+
 	if (typeof newScore=="undefined")
 		return this.ballScores[whichBall-1];
 
+	// Setting new score
+	if (Math.floor(+newScore)+""!==newScore+"")
+		throw new tenpin.model.InvalidBallScoreError("Score must be an integer");
+	if (+newScore>10)
+		throw new tenpin.model.InvalidBallScoreError("Cannot knock down more than ten pins with a single ball");
 	var newScores = this.ballScores.slice();
 	newScores[whichBall-1] = newScore;
 	this._checkBallScores(newScores); // throws if a score is invalid
@@ -168,7 +199,7 @@ tenpin.model.PlayerFrame.prototype.ballScore = function(whichBall, newScore){
 };
 
 // get the number of balls thrown
-tenpin.model.PlayerFrame.prototype.ballsThrownCount = function(){
+tenpin.model.PlayerFrame.prototype.ballsThrown = function(){
 	var len = this.ballScores.length;
 	var count = 0;
 	for (var i=0; i<len; i++)
@@ -180,7 +211,7 @@ tenpin.model.PlayerFrame.prototype.ballsThrownCount = function(){
 };
 
 // get the number of balls allowed to be thrown in this frame, based on the current ball scores (might not be 2 if this is the last frame or the first ball was a strike)
-tenpin.model.PlayerFrame.prototype.ballsAllowedCount = function(){
+tenpin.model.PlayerFrame.prototype.ballsAllowed = function(){
 	if (this.isStrike())
 		return 1;
 	return 2;
@@ -200,12 +231,32 @@ tenpin.model.PlayerFrame.prototype.nextFrame = function(){
 
 tenpin.model.PlayerFrame_last = function(player){
 	tenpin.model.PlayerFrame.call(this, player);
-	this.ballScores = [null,null,null];
 };
 
 tenpin.model.PlayerFrame_last.prototype = tenpin.inheritPrototype(tenpin.model.PlayerFrame);
-tenpin.model.PlayerFrame_last.prototype.ballsAllowedCount = function(){
 
+tenpin.model.PlayerFrame_last.prototype.clear = function(){
+	this.ballScores = [null,null,null];
+	return this;
+};
+
+tenpin.model.PlayerFrame_last.prototype.ballsAllowed = function(){
+	if (this.isStrike() || this.isSpare())
+		return 3;
+	return 2;
+};
+
+tenpin.model.PlayerFrame_last.prototype._checkBallScores = function(ballScores){
+	if (!this.isStrike() && !this.isSpare() && ballScores[0]+ballScores[1] > 10)
+		throw new tenpin.model.InvalidBallScoreError("Cannot knock down more than ten pins in the last frame unless a spare or strike was obtained");
+	if (ballScores[0]<0 || ballScores[1]<0 || ballScores[2]<0)
+		throw new tenpin.model.InvalidBallScoreError("Cannot have negative scores");
+	if (ballScores[0]===null && ballScores[1]!==null)
+		throw new tenpin.model.InvalidBallScoreError("Must set the score of ball 1 before ball 2");
+	if (ballScores[0]===null && ballScores[2]!==null)
+		throw new tenpin.model.InvalidBallScoreError("Must set the score of ball 1 before ball 3");
+	if (ballScores[1]===null && ballScores[2]!==null)
+		throw new tenpin.model.InvalidBallScoreError("Must set the score of ball 2 before ball 3");
 };
 
 

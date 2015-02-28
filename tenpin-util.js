@@ -6,6 +6,15 @@ tenpin.inheritPrototype = function(parentClass){
 	return new c();
 };
 
+tenpin.arraySum = function(a){
+	var sum = 0, len = a.length;
+	for (var i=0; i<len; i++)
+	{
+		sum += a[i];
+	}
+	return sum;
+}
+
 // Class to manage a list of callbacks
 // (basically an observer subject)
 tenpin.Callbacks = function(){
