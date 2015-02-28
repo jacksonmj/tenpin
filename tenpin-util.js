@@ -1,6 +1,6 @@
 var tenpin = tenpin || {}
 
-tenpin.inheritPrototype = function(parentClass){
+tenpin.inheritPrototype = function(parentClass){// Object.create is not supported by old browsers
 	var c = function (){};
 	c.prototype = parentClass.prototype;
 	return new c();
@@ -15,6 +15,10 @@ tenpin.arraySum = function(a){
 	return sum;
 }
 
+tenpin.isInteger = function(x){// returns true if x is an integer
+	return (Math.floor(+x)===x);
+}
+
 // Class to manage a list of callbacks
 // (basically an observer subject)
 tenpin.Callbacks = function(){
@@ -23,7 +27,7 @@ tenpin.Callbacks = function(){
 // Add a callback (a function to call, and a value to use as the "this" value inside the function)
 // Does not detect and prevent duplicates
 tenpin.Callbacks.prototype.add = function(func, thisArg){
-	this._callbacks.push({func:func, thisArg:obj});
+	this._callbacks.push({func:func, thisArg:thisArg});
 }
 // Run the callbacks. All arguments given are passed through to the callback functions
 // Does not detect and prevent recursion
