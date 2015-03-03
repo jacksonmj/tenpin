@@ -1,0 +1,40 @@
+
+html, body {
+	font-family: Arial, "FreeSans", sans-serif;
+	font-size:12pt;
+}
+
+.ScoreTable {
+	border-collapse:collapse;
+
+	.PlayerName {
+		text-align:left;
+	}
+	.Frame, .TotalScore {
+		text-align:center;
+	}
+	th, td {
+		border:1px solid #000;
+		padding:0;
+	}
+	th, td.PlayerName, td.TotalScore {
+		padding:0.1em 0.3em;
+	}
+
+	@frame-internalBorder: 1px solid #BBB;
+	.BallScore {
+		display:block;
+		float:left;
+		min-width:1.5em;
+		padding:0.1em 0;
+		border-left:@frame-internalBorder;
+		&:first-child {
+			border-left:0 none;
+		}
+	}
+	.FrameScore {
+		border-top:@frame-internalBorder;
+		clear:left;
+		padding:0.1em;
+	}
+}

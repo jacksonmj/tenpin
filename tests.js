@@ -303,15 +303,23 @@ QUnit.module("model callbacks", {
 });
 QUnit.test("Player nameChanged", function(assert){
 	assert.expect(2);
-	this.p.callbacks.nameChanged.add(function(player, newName){
+	this.p.callbacks.nameChanged.add(function(newName, player){
 		assert.equal(player, this.p, "callback argument: player");
 		assert.equal(newName, "John Smith", "callback argument: newName");
 	}, this);
 	this.p.name("John Smith")
 });
+QUnit.test("Player playerScoreChanged", function(assert){
+	assert.expect(2);
+	this.p.callbacks.playerScoreChanged.add(function(newPlayerScore, player){
+		assert.equal(player, this.p, "callback argument: player");
+		assert.equal(newPlayerScore, 12, "callback argument: newPlayerScore");
+	}, this);
+	this.p.frame(1).ball(2,5);
+});
 QUnit.test("PlayerFrame ballScoreChanged", function(assert){
 	assert.expect(3);
-	this.p.frame(1).callbacks.ballScoreChanged.add(function(frame, whichBall, newBallScore){
+	this.p.frame(1).callbacks.ballScoreChanged.add(function(newBallScore, whichBall, frame){
 		assert.equal(frame, this.p.frame(1), "callback argument: frame");
 		assert.equal(whichBall, 1, "callback argument: whichBall");
 		assert.equal(newBallScore, 5, "callback argument: newBallScore");
@@ -319,46 +327,22 @@ QUnit.test("PlayerFrame ballScoreChanged", function(assert){
 	this.p.frame(1).ball(1,5);
 	this.p.frame(2).ball(1,2);
 });
-QUnit.test("Player ballScoreChanged", function(assert){
-	assert.expect(2);
-	this.p.callbacks.ballScoreChanged.add(function(frame, whichBall, newBallScore){
-		assert.ok(true, "callback fired");
-	}, this);
-	this.p.frame(1).ball(1,5);
-	this.p.frame(2).ball(1,2);
-});
 QUnit.test("PlayerFrame frameScoreChanged", function(assert){
 	assert.expect(2);
-	this.p.frame(1).callbacks.frameScoreChanged.add(function(frame, newFrameScore){
+	this.p.frame(1).callbacks.frameScoreChanged.add(function(newFrameScore, frame){
 		assert.equal(frame, this.p.frame(1), "callback argument: frame");
 		assert.equal(newFrameScore, 8, "callback argument: newFrameScore");
 	}, this);
 	this.p.frame(1).ball(2,5);
 	this.p.frame(2).ball(2,2);
 });
-QUnit.test("Player frameScoreChanged", function(assert){
-	assert.expect(2);
-	this.p.callbacks.frameScoreChanged.add(function(frame, newFrameScore){
-		assert.ok(true, "callback fired");
-	}, this);
-	this.p.frame(1).ball(2,5);
-	this.p.frame(2).ball(2,2);
-});
-QUnit.test("Player frameScoreChanged for other affected frames", function(assert){
+QUnit.test("PlayerFrame frameScoreChanged for other affected frames", function(assert){
 	assert.expect(2);
 	this.p.frame(1).clear().ball(1,10);
-	this.p.frame(1).callbacks.frameScoreChanged.add(function(frame, newFrameScore){
+	this.p.frame(1).callbacks.frameScoreChanged.add(function(newFrameScore, frame){
 		assert.equal(frame, this.p.frame(1), "callback argument: frame");
 		assert.equal(newFrameScore, 16, "callback argument: newFrameScore");
 	}, this);
 	this.p.frame(2).ball(2,2);
-});
-QUnit.test("Player playerScoreChanged", function(assert){
-	assert.expect(2);
-	this.p.callbacks.playerScoreChanged.add(function(player, newPlayerScore){
-		assert.equal(player, this.p, "callback argument: player");
-		assert.equal(newPlayerScore, 12, "callback argument: newPlayerScore");
-	}, this);
-	this.p.frame(1).ball(2,5);
 });
 

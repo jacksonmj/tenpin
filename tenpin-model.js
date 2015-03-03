@@ -8,7 +8,18 @@ tenpin.model.Game = function(){
 	this.players = [];
 };
 
-tenpin.model.Game.prototype._frameCount = 10;
+tenpin.model.Game.prototype._frameCount = 10;// default for new players
+tenpin.model.Game.prototype.frameCount = function(){
+	var count = this._frameCount;
+	var len = this.players.length;
+	for (var i=0; i<len; i++)
+	{
+		var n = this.players[i].frameCount();
+		if (n>count)
+			count = n;
+	}
+	return count;
+}
 
 tenpin.model.Game.prototype.newPlayer = function(){
 	var p = new tenpin.model.Player(this);
@@ -36,11 +47,13 @@ tenpin.model.Player.prototype._initFrames = function(){
 
 tenpin.model.Player.prototype._initCallbacks = function(){
 	this.callbacks = this.callbacks || {};
-	this.callbacks.nameChanged = new tenpin.Callbacks();// called with arguments: player, newName
-	this.callbacks.playerScoreChanged = new tenpin.Callbacks();// called with arguments: player, newPlayerScore
-	this.callbacks.frameScoreChanged = new tenpin.Callbacks();// called with arguments: frame, newFrameScore
-	this.callbacks.ballScoreChanged = new tenpin.Callbacks();// called with arguments: frame, whichBall, newBallScore
+	this.callbacks.nameChanged = new tenpin.Callbacks();// called with arguments: newName, player
+	this.callbacks.playerScoreChanged = new tenpin.Callbacks();// called with arguments: newPlayerScore, player
 };
+
+tenpin.model.Player.prototype.frameCount = function(){
+	return this._frames.length;
+}
 
 tenpin.model.Player.prototype._name = null;
 // get or set player's name
@@ -48,7 +61,7 @@ tenpin.model.Player.prototype.name = function(newName){
 	if (typeof newName=="undefined")
 		return this._name;
 	this._name = newName;
-	this.callbacks.nameChanged.fire(this, newName);
+	this.callbacks.nameChanged.fire(newName, this);
 	return this;
 };
 
@@ -77,7 +90,7 @@ tenpin.model.Player.prototype._checkForScoreChanges = function(){
 	if (this._score!==newScore)
 	{
 		this._score = newScore;
-		this.callbacks.playerScoreChanged.fire(this, newScore);
+		this.callbacks.playerScoreChanged.fire(newScore, this);
 	}
 }
 
@@ -156,8 +169,8 @@ tenpin.model.PlayerFrame.prototype.clear = function(){
 
 tenpin.model.PlayerFrame.prototype._initCallbacks = function(){
 		this.callbacks = this.callbacks || {};
-	this.callbacks.ballScoreChanged = new tenpin.Callbacks();// called with arguments: frame, whichBall, newBallScore
-	this.callbacks.frameScoreChanged = new tenpin.Callbacks();// called with arguments: frame, newFrameScore
+	this.callbacks.ballScoreChanged = new tenpin.Callbacks();// called with arguments: newBallScore, whichBall, frame
+	this.callbacks.frameScoreChanged = new tenpin.Callbacks();// called with arguments: newFrameScore, frame
 };
 
 // get total score from this frame (pins knocked down plus any bonuses)
@@ -178,8 +191,7 @@ tenpin.model.PlayerFrame.prototype._checkForScoreChanges = function(){
 	if (this._score!==newScore)
 	{
 		this._score = newScore;
-		this.callbacks.frameScoreChanged.fire(this, newScore);
-		this.player.callbacks.frameScoreChanged.fire(this, newScore);
+		this.callbacks.frameScoreChanged.fire(newScore, this);
 	}
 }
 
@@ -233,8 +245,7 @@ tenpin.model.PlayerFrame.prototype.ball = function(whichBall, newScore){
 	this._ballScores[whichBall-1] = newScore;
 
 	// Notify of changes
-	this.callbacks.ballScoreChanged.fire(this, whichBall, newScore);
-	this.player.callbacks.ballScoreChanged.fire(this, whichBall, newScore);
+	this.callbacks.ballScoreChanged.fire(newScore, whichBall, this);
 	this.player._checkForScoreChanges();
 	return this;
 };
