@@ -374,7 +374,14 @@ tenpin.view.BallInput.prototype.updateVisibility = function(){
 	if (this.frameModel && this.whichBall<=this.frameModel.ballsAllowed())
 		this.container.show();
 	else
+	{
 		this.container.hide();
+		if (this.value()!==null)
+		{
+			this.value(null);
+			this.frameInput.onInputChanged();
+		}
+	}
 	return this;
 }
 tenpin.view.BallInput.prototype.value = function(newValue){
