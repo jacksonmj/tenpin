@@ -6,6 +6,12 @@ tenpin.model = tenpin.model || {}
 
 tenpin.model.Game = function(){
 	this.players = [];
+	this._initCallbacks();
+};
+
+tenpin.model.Game.prototype._initCallbacks = function(){
+	this.callbacks = this.callbacks || {};
+	this.callbacks.playerAdded = new tenpin.Callbacks();// called with arguments: newPlayer, game
 };
 
 tenpin.model.Game.prototype._frameCount = 10;// default for new players
@@ -24,6 +30,7 @@ tenpin.model.Game.prototype.frameCount = function(){
 tenpin.model.Game.prototype.newPlayer = function(){
 	var p = new tenpin.model.Player(this);
 	this.players.push(p);
+	this.callbacks.playerAdded.fire(p, this);
 	return p;
 }
 
@@ -115,7 +122,7 @@ tenpin.model.Player.prototype.getBallScores = function(startFrame, maxBalls){
 };
 
 // Get the frame number (1-indexed) corresponding to a frame object
-tenpin.model.Player.prototype.frameIndex = function(frame){
+tenpin.model.Player.prototype.frameNumber = function(frame){
 	if (!(frame instanceof tenpin.model.PlayerFrame))
 		throw "Invalid frame object";
 	var len = this._frames.length;
@@ -136,18 +143,32 @@ tenpin.model.Player.prototype.frame = function(frameNumber){
 // Return the frame before/after the argument (argument must be an instance of tenpin.model.PlayerFrame and must be one of the frames for this player)
 // Returns null if there is no frame before/after.
 tenpin.model.Player.prototype.frameBefore = function(frame){
-	var i = this.frameIndex(frame);
+	var i = this.frameNumber(frame);
 	if (i<=1)
 		return null;
 	return this.frame(i-1);
 };
 tenpin.model.Player.prototype.frameAfter = function(frame){
-	var i = this.frameIndex(frame);
+	var i = this.frameNumber(frame);
 	if (i>=this._frames.length)
 		return null;
 	return this.frame(i+1);
 };
 
+tenpin.model.Player.prototype.next = function(){
+	var len = this.game.players.length;
+	for (var i=0; i<len; i++)
+	{
+		if (this.game.players[i]===this)
+		{
+			if (i+1<len)
+				return this.game.players[i+1];
+			else
+				return null;
+		}
+	}
+	return null;
+}
 
 tenpin.model.InvalidBallScoreError = function(msg){
 	this.msg = msg;
@@ -163,7 +184,7 @@ tenpin.model.PlayerFrame = function(player){
 };
 
 tenpin.model.PlayerFrame.prototype.clear = function(){
-	this.ball(2,null).ball(1,null);
+	this.setBalls({1:null,2:null});
 	return this;
 }
 
@@ -229,25 +250,51 @@ tenpin.model.PlayerFrame.prototype.ball = function(whichBall, newScore){
 
 	if (typeof newScore=="undefined") // retrieve score
 		return this._ballScores[whichBall-1];
+	else if (newScore!==this._ballScores[whichBall-1])// if newScore is different from the current stored score, try to change it
+	{
+		var changes = {};
+		changes[whichBall] = newScore;
+		this.setBalls(changes);
+	}
+	return this;
+};
 
-	if (newScore===this._ballScores[whichBall-1]) // no change to score
-		return this;
-	// Check new scores are valid
+// Set scores for multiple balls at once
+// Useful when changing them one at a time would cause validation errors (e.g. "more than 10 pins knocked down in a frame"), but the new scores taken as a whole are valid
+tenpin.model.PlayerFrame.prototype.setBalls = function(scoreChanges){
+	var i, ballNumber;
+	var newScores = this._ballScores.slice();
+	for (i=0; i<this._ballScores.length; i++)
+	{
+		ballNumber = i+1;
+		if (typeof scoreChanges[ballNumber]!="undefined")
+		{
+			this._validateBallScore(scoreChanges[ballNumber]);// (throws if a score is invalid)
+			newScores[i] = scoreChanges[ballNumber];
+		}
+	}
+
+	this._checkBallScores(newScores); // (throws if a score is invalid)
+
+	// New scores are valid, store them
+	this._ballScores = newScores;
+
+	// Notify of changes
+	for (i=0; i<this._ballScores.length; i++)
+	{
+		ballNumber = i+1;
+		if (typeof scoreChanges[ballNumber]!="undefined")
+			this.callbacks.ballScoreChanged.fire(scoreChanges[ballNumber], ballNumber, this);
+	}
+	this.player._checkForScoreChanges();
+	return this;
+};
+
+tenpin.model.PlayerFrame.prototype._validateBallScore = function(newScore){
 	if (!tenpin.isInteger(newScore) && newScore!==null)
 		throw new tenpin.model.InvalidBallScoreError("Score must be an integer or null");
 	if (newScore>10)
 		throw new tenpin.model.InvalidBallScoreError("Cannot knock down more than ten pins with a single ball");
-	var newScores = this._ballScores.slice();
-	newScores[whichBall-1] = newScore;
-	this._checkBallScores(newScores); // (throws if a score is invalid)
-
-	// New score is valid, store it
-	this._ballScores[whichBall-1] = newScore;
-
-	// Notify of changes
-	this.callbacks.ballScoreChanged.fire(newScore, whichBall, this);
-	this.player._checkForScoreChanges();
-	return this;
 };
 
 // get the number of balls thrown
@@ -282,6 +329,9 @@ tenpin.model.PlayerFrame.prototype.nextFrame = function(){
 	return this.player.frameAfter(this);
 };
 
+tenpin.model.PlayerFrame.prototype.frameNumber = function(){
+	return this.player.frameNumber(this);
+}
 
 
 tenpin.model.PlayerFrame_last = function(player){
@@ -292,7 +342,7 @@ tenpin.model.PlayerFrame_last = function(player){
 tenpin.model.PlayerFrame_last.prototype = tenpin.inheritPrototype(tenpin.model.PlayerFrame);
 
 tenpin.model.PlayerFrame_last.prototype.clear = function(){
-	this.ball(3,null).ball(2,null).ball(1,null);
+	this.setBalls({1:null,2:null,3:null});
 	return this;
 };
 

@@ -165,8 +165,8 @@ QUnit.test("frame access", function(assert){
 	assert.ok(this.p.frame(3) !== this.p.frame(4), "different frames are distinct");
 	assert.deepEqual(this.p.frame(3), this.p.frame(4).prevFrame(), "prevFrame");
 	assert.deepEqual(this.p.frame(6), this.p.frame(5).nextFrame(), "nextFrame");
-	assert.deepEqual(this.p.frameIndex(this.p.frame(5)), 5, "frameIndex");
-	assert.deepEqual(this.p.frameIndex(this.p.frame(10)), 10, "frameIndex for frame 10");
+	assert.deepEqual(this.p.frameNumber(this.p.frame(5)), 5, "frameIndex");
+	assert.deepEqual(this.p.frameNumber(this.p.frame(10)), 10, "frameIndex for frame 10");
 	assert.deepEqual(this.p.frame(11), null, "frame > 10");
 	assert.deepEqual(this.p.frame(0), null, "frame < 1");
 	assert.deepEqual(this.p.frame("abc"), null, "invalid frame number (string)");
@@ -176,10 +176,10 @@ QUnit.test("frame access", function(assert){
 	assert.throws(function(){
 		var g = new tenpin.model.Game();
 		var p = g.newPlayer();
-		this.p.frameIndex(p.frame(1));
+		this.p.frameNumber(p.frame(1));
 	}, /not from this player/i, "throw on frame from different Player");
 	assert.throws(function(){
-		this.p.frameIndex({});
+		this.p.frameNumber({});
 	}, /invalid frame/i, "throw on object which isn't a frame");
 });
 

@@ -1,14 +1,27 @@
 
+.clearfix {
+	&:before, &:after {
+		content: "";
+		display: table;
+	}
+	&:after {
+		clear: both;
+	}
+	zoom: 1; // IE 6/7 (trigger hasLayout)
+}
+
 html, body {
 	font-family: Arial, "FreeSans", sans-serif;
-	font-size:12pt;
+	font-size:16px;
 }
 
 .ScoreTable {
 	border-collapse:collapse;
+	margin:0 auto;
 
 	.PlayerName {
 		text-align:left;
+		min-width:8em;
 	}
 	.Frame, .TotalScore {
 		text-align:center;
@@ -21,12 +34,27 @@ html, body {
 		padding:0.1em 0.3em;
 	}
 
+	td.Frame {
+		cursor:text;
+	}
+
+	@ballscore-width: 25px;
+	@ballscore-border-width: 25px;
 	@frame-internalBorder: 1px solid #BBB;
+	.BallScores {
+		.clearfix;
+		min-width:2*@ballscore-width + 1px;
+		display:flex;
+	}
+	.Frame-Last .BallScores {
+		min-width:3*@ballscore-width + 2px;
+	}
 	.BallScore {
 		display:block;
+		flex:1 1 auto;
 		float:left;
-		min-width:1.5em;
-		padding:0.1em 0;
+		min-width:@ballscore-width;
+		padding:2px 0;
 		border-left:@frame-internalBorder;
 		&:first-child {
 			border-left:0 none;
@@ -34,7 +62,87 @@ html, body {
 	}
 	.FrameScore {
 		border-top:@frame-internalBorder;
-		clear:left;
-		padding:0.1em;
+		padding:2px;
+	}
+
+	@media screen {
+		.BallScore {
+			background-color:#F0F0F0;
+		}
+		.BallScore-10 {
+			background-color:#D0FFD0;
+		}
+		.Frame-Spare .BallScore {
+			background-color:#F0FFF0;
+		}
+		.Frame-Complete .BallScore-null {
+			background-color:#AAA;
+		}
 	}
 }
+
+.FrameInput {
+	max-width:400px;
+	border:1px solid #CCC;
+	background-color:#F0F4FF;
+	border-radius:3px;
+	margin:15px auto;
+	text-align:center;
+
+	@media print {
+		display:none;
+	}
+	h2 {
+		font-size:20px;
+		font-weight:bold;
+		margin:10px;
+		margin-bottom:0;
+		padding:0;
+		text-align:center;
+	}
+	input[type="submit"] {
+		margin:0 auto 10px auto;
+		color:#FFF;
+		background-color:#05C;
+		box-shadow:1px 5px 5px rgba(255,255,255,0.2) inset, 1px 1px 3px rgba(0,0,0,0.1);
+		border:1px solid #05A;
+		border-radius:3px;
+		text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+		font-size:15px;
+		height:35px;
+		&:hover, &:active {
+			box-shadow:1px 5px 5px rgba(0,0,0,0.1) inset;
+			cursor:pointer;
+		}
+	}
+	.BallInputs {
+		.clearfix;
+		text-align:left;
+		display:flex;
+		justify-content:center;
+	}
+	.BallInput {
+		float:left;
+		padding:10px;
+		flex:0 0 auto;
+		label {
+			display:block;
+		}
+		input {
+			border:1px solid #666;
+			border-radius:2px;
+			font-size:18px;
+			box-shadow:0 2px 5px rgba(0,0,0,0.1) inset;
+			width:4em;
+		}
+	}
+	.ErrorMsg {
+		border:1px solid #800;
+		background-color:#FFE0E0;
+		margin:10px;
+		padding:5px;
+		border-radius:3px;
+	}
+
+}
+

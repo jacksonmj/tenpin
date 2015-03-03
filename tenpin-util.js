@@ -19,6 +19,11 @@ tenpin.isInteger = function(x){// returns true if x is an integer
 	return (Math.floor(+x)===x);
 }
 
+tenpin.bind = function(func,thisArg){// Function.bind is not supported by old browsers
+	return function(){return func.apply(thisArg,arguments);};
+}
+
+
 // Class to manage a list of callbacks
 // (basically an observer subject)
 tenpin.Callbacks = function(){
