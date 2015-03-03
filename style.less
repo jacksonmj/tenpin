@@ -10,9 +10,31 @@
 	zoom: 1; // IE 6/7 (trigger hasLayout)
 }
 
+.tpInput {
+	border:1px solid #666;
+	border-radius:2px;
+	font-size:18px;
+	box-shadow:0 2px 5px rgba(0,0,0,0.1) inset;
+}
+
 html, body {
 	font-family: Arial, "FreeSans", sans-serif;
 	font-size:16px;
+}
+
+.btn {
+	color:#FFF;
+	background-color:#05C;
+	box-shadow:1px 5px 5px rgba(255,255,255,0.1) inset, 1px 1px 3px rgba(0,0,0,0.1);
+	border:1px solid #05A;
+	border-radius:3px;
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+	font-size:15px;
+	height:30px;
+	&:hover, &:active {
+		box-shadow:1px 5px 5px rgba(0,0,0,0.1) inset;
+		cursor:pointer;
+	}
 }
 
 .ScoreTable {
@@ -69,11 +91,11 @@ html, body {
 		.BallScore {
 			background-color:#F0F0F0;
 		}
-		.BallScore-10 {
-			background-color:#D0FFD0;
-		}
 		.Frame-Spare .BallScore {
 			background-color:#F0FFF0;
+		}
+		.BallScore-10 {
+			background-color:#D0FFD0;
 		}
 		.Frame-Complete .BallScore-null {
 			background-color:#AAA;
@@ -81,7 +103,7 @@ html, body {
 	}
 }
 
-.FrameInput {
+.FrameInput, .AddPlayer {
 	max-width:400px;
 	border:1px solid #CCC;
 	background-color:#F0F4FF;
@@ -89,31 +111,19 @@ html, body {
 	margin:15px auto;
 	text-align:center;
 
-	@media print {
-		display:none;
-	}
 	h2 {
-		font-size:20px;
+		font-size:16px;
 		font-weight:bold;
 		margin:10px;
 		margin-bottom:0;
 		padding:0;
 		text-align:center;
 	}
+}
+
+.FrameInput {
 	input[type="submit"] {
 		margin:0 auto 10px auto;
-		color:#FFF;
-		background-color:#05C;
-		box-shadow:1px 5px 5px rgba(255,255,255,0.2) inset, 1px 1px 3px rgba(0,0,0,0.1);
-		border:1px solid #05A;
-		border-radius:3px;
-		text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-		font-size:15px;
-		height:35px;
-		&:hover, &:active {
-			box-shadow:1px 5px 5px rgba(0,0,0,0.1) inset;
-			cursor:pointer;
-		}
 	}
 	.BallInputs {
 		.clearfix;
@@ -129,10 +139,7 @@ html, body {
 			display:block;
 		}
 		input {
-			border:1px solid #666;
-			border-radius:2px;
-			font-size:18px;
-			box-shadow:0 2px 5px rgba(0,0,0,0.1) inset;
+			.tpInput;
 			width:4em;
 		}
 	}
@@ -144,5 +151,30 @@ html, body {
 		border-radius:3px;
 	}
 
+}
+
+.AddPlayer {
+	border-color:#CCC;
+	background-color:#F0FFF0;
+
+	input[type="text"] {
+		.tpInput;
+		height:24px;
+		padding:2px;
+	}
+	input {
+		margin:10px 5px;
+		vertical-align:middle;
+	}
+}
+
+.Hints {
+	text-align:center;
+}
+
+@media print {
+	.FrameInput, .AddPlayer {
+		display:none;
+	}
 }
 

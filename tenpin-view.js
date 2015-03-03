@@ -6,22 +6,16 @@ tenpin.view = tenpin.view || {}
 tenpin.view.Game = function(container, gameModel){
 	if (typeof gameModel=="undefined") {
 		gameModel = new tenpin.model.Game();
-		var testPlayer = gameModel.newPlayer().name("John Smith");
-		testPlayer.frame(1).ball(1,5).ball(2,3);
-
-		testPlayer.frame(2).ball(1,10);
-		testPlayer.frame(3).ball(1,9).ball(2,1);
-		testPlayer.frame(4).ball(1,1).ball(2,2);
 	}
 	this.gameModel = gameModel;
 	this.scoreTable = new tenpin.view.ScoreTable(container, this.gameModel);
 	this.scoreInput = new tenpin.view.FrameInput(container);
+	this.newPlayerForm = new tenpin.view.NewPlayerForm(container, this.gameModel);
 
 	this.scoreTable.inputActions.clickFrame.add(this.setEditFrame, this);
 	this.gameModel.callbacks.playerAdded.add(this.onPlayerAdded, this);
 
-	scoreInput.setFrame(testPlayer.frame(3));
-	scoreInput.focus();
+	this.newPlayerForm.nameInput.focus();
 }
 tenpin.view.Game.prototype.setEditFrame = function(newFrame) {
 	this.scoreInput.setFrame(newFrame);
@@ -31,6 +25,32 @@ tenpin.view.Game.prototype.onPlayerAdded = function() {
 	this.scoreInput.setFrame(this.gameModel.players[0].frame(1));
 }
 
+
+tenpin.view.NewPlayerForm = function(container, gameModel){
+	this.onSubmit = tenpin.bind(this.onSubmit, this);
+	this.gameModel = gameModel;
+
+	this.form = $(document.createElement('form')).addClass("AddPlayer");
+	this.title = $('<h2>Add player</h2>').appendTo(this.form);
+	this.nameInput = $('<input type="text" placeholder="Name">').appendTo(this.form);
+	this.submitButton = $('<input class="btn" type="submit" value="Add">').appendTo(this.form);
+	this.form.appendTo(container);
+
+	this.form.on('submit', this.onSubmit);
+}
+
+tenpin.view.NewPlayerForm.prototype.onSubmit = function(){
+	var name = this.nameInput.val();
+	name = name.replace(/^\s+|\s+$/gm,'');// trim whitespace, old browsers are a pain
+	if (name==='')
+	{
+		alert('Name cannot be blank');
+		return false;
+	}
+	this.gameModel.newPlayer().name(name);
+	this.nameInput.val('').focus();
+	return false;
+}
 
 tenpin.view.ScoreTable = function(container, gameModel){
 	this.gameModel = gameModel;
@@ -42,12 +62,14 @@ tenpin.view.ScoreTable = function(container, gameModel){
 	this.table = $('<table class="ScoreTable"><thead></thead><tbody></tbody></table>').appendTo(container);
 	this.header = new tenpin.view.ScoreTable_header(this.table.find("thead"), gameModel);
 	this.players = [];
-	var tbody = this.table.find("tbody");
+	this.tbody = this.table.find("tbody");
 	var len = this.gameModel.players.length;
 	for (var i=0; i<len; i++)
 	{
-		this.players.push(new tenpin.view.ScoreTable_player(tbody, this.gameModel.players[i]));
+		this.players.push(new tenpin.view.ScoreTable_player(this.tbody, this.gameModel.players[i]));
 	}
+
+	this.gameModel.callbacks.playerAdded.add(this.onPlayerAdded, this);
 	this.table.on('click', this.onClick);
 };
 
@@ -61,6 +83,9 @@ tenpin.view.ScoreTable.prototype.onClick = function(e){
 	return true;
 }
 
+tenpin.view.ScoreTable.prototype.onPlayerAdded = function(newPlayer) {
+	this.players.push(new tenpin.view.ScoreTable_player(this.tbody, newPlayer));
+}
 
 tenpin.view.ScoreTable_row = function(container, gameModel){
 	this.gameModel = gameModel;
@@ -193,6 +218,7 @@ tenpin.view.FrameInput = function(container){
 	this.title = $('<h2></h2>').appendTo(this.container);
 	this.form = $('<form></form>').appendTo(this.container);
 	this.errorMsg = false;
+	this.frameModel = null;
 	this.balls = [];
 	this.ballsCount = 3;
 	var ballInputsContainer = $('<div class="BallInputs"></div>').appendTo(this.form);
@@ -200,7 +226,7 @@ tenpin.view.FrameInput = function(container){
 		this.balls[i] = new tenpin.view.BallInput(ballInputsContainer, this);
 	}
 
-	this.submitButton = $('<input type="submit" value="Next frame">').appendTo(this.form);
+	this.submitButton = $('<input type="submit" class="btn" value="Next frame">').appendTo(this.form);
 	this.errorContainer = $('<div class="ErrorMsg"></div>').hide().appendTo(this.form);
 
 	this.form.on('change', this.onInputChanged);
@@ -210,14 +236,27 @@ tenpin.view.FrameInput = function(container){
 }
 
 tenpin.view.FrameInput.prototype._setFrame = function(frameModel){
+	if (this.frameModel)
+	{
+		this.frameModel.player.callbacks.nameChanged.remove(this.updateTitle, this);
+	}
+
 	this.frameModel = frameModel;
 	for (var i=1; i<=this.ballsCount; i++) {
 		this.balls[i].setTargetBall(frameModel, i);
 	}
 	this.submitButton.toggle(!!frameModel);
 	if (this.frameModel)
-		this.title.text(this.frameModel.player.name()+" - frame "+this.frameModel.frameNumber());
+	{
+		this.frameModel.player.callbacks.nameChanged.add(this.updateTitle, this);
+	}
+	this.updateTitle();
 	this.container.toggle(this.frameModel!==null);
+}
+
+tenpin.view.FrameInput.prototype.updateTitle = function(){
+	if (this.frameModel)
+		this.title.text("Scores for "+this.frameModel.player.name()+" - frame "+this.frameModel.frameNumber());
 }
 
 tenpin.view.FrameInput.prototype.setFrame = function(newFrameModel){
@@ -368,6 +407,8 @@ console.log(e);
 		// turn enter keypress into tab ("advance to next input") if data entry for this frame is not finished
 		if (this.frameModel.isComplete())// finished data entry, submit is ok
 			return true;
+		if (this.input.val()==='')// don't advance or submit if the current field is blank
+			return false;
 		var inputs = this.frameInput.form.find("input");
 		var i = inputs.index(this.input);
 		if (i+1>=inputs.length)
