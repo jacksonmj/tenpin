@@ -72,17 +72,17 @@ html, body {
 	@frame-internalBorder: @ballscore-border-width solid #BBB;
 	.BallScores {
 		.clearfix;
-		min-width:2*@ballscore-width + @ballscore-border-width;
+		width:2*@ballscore-width + @ballscore-border-width;
 		display:flex;
 	}
 	.Frame-Last .BallScores {
-		min-width:3*@ballscore-width + 2*@ballscore-border-width;
+		width:3*@ballscore-width + 2*@ballscore-border-width;
 	}
 	.BallScore {
 		display:block;
 		flex:1 1 auto;
 		float:left;
-		min-width:@ballscore-width;
+		width:@ballscore-width;
 		padding:2px 0;
 		border-left:@frame-internalBorder;
 		&:first-child {

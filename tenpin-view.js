@@ -82,7 +82,6 @@ tenpin.view.ScoreTable.prototype.onClick = function(e){
 	var frameCell = $(e.target).parents(".ScoreTable td.Frame");
 	if (frameCell.length===1) {
 		this.inputActions.clickFrame.fire(frameCell.data("frameView").frameModel, e);
-		console.log(frameCell.data("frameView").frameModel);
 		return false;
 	}
 	return true;
@@ -201,7 +200,7 @@ tenpin.view.ScoreTable_Frame_last.prototype = tenpin.inheritPrototype(tenpin.vie
 tenpin.view.ScoreTable_BallScore = function(container, frameModel, whichBall){
 	this.frameModel = frameModel;
 	this.whichBall = whichBall;
-	this.scoreElem = $('<span class="BallScore"></div>').attr('title', 'Frame '+frameModel.frameNumber()+' ball '+whichBall).appendTo(container);
+	this.scoreElem = $('<span class="BallScore"></span>').attr('title', 'Frame '+frameModel.frameNumber()+' ball '+whichBall).appendTo(container);
 	this.currentScore = null;
 	this.setScore(this.frameModel.ball(whichBall));
 }
@@ -408,7 +407,6 @@ tenpin.view.BallInput.prototype.onBallScoreChanged = function(newBallScore, whic
 }
 
 tenpin.view.BallInput.prototype.onKeypress = function(e){
-console.log(e);
 	if (e.keyCode===13) {
 		// turn enter keypress into tab ("advance to next input") if data entry for this frame is not finished
 		if (this.frameModel.isComplete())// finished data entry, submit is ok
