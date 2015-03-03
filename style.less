@@ -19,7 +19,8 @@
 
 html, body {
 	font-family: Arial, "FreeSans", sans-serif;
-	font-size:16px;
+	font-size:15px;
+
 }
 
 .btn {
@@ -57,19 +58,25 @@ html, body {
 	}
 
 	td.Frame {
-		cursor:text;
+		cursor:text;//.a hint that they can be clicked to edit
 	}
 
-	@ballscore-width: 25px;
-	@ballscore-border-width: 25px;
-	@frame-internalBorder: 1px solid #BBB;
+	.NoPlayers {
+		text-align:center;
+		padding:10px;
+		font-style:italic;
+	}
+
+	@ballscore-width: 20px;
+	@ballscore-border-width: 1px;
+	@frame-internalBorder: @ballscore-border-width solid #BBB;
 	.BallScores {
 		.clearfix;
-		min-width:2*@ballscore-width + 1px;
+		min-width:2*@ballscore-width + @ballscore-border-width;
 		display:flex;
 	}
 	.Frame-Last .BallScores {
-		min-width:3*@ballscore-width + 2px;
+		min-width:3*@ballscore-width + 2*@ballscore-border-width;
 	}
 	.BallScore {
 		display:block;
@@ -173,8 +180,8 @@ html, body {
 }
 
 @media print {
-	.FrameInput, .AddPlayer {
-		display:none;
+	.FrameInput, .AddPlayer, .Hints {
+		display:none !important;
 	}
 }
 

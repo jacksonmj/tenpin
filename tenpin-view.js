@@ -69,6 +69,11 @@ tenpin.view.ScoreTable = function(container, gameModel){
 		this.players.push(new tenpin.view.ScoreTable_player(this.tbody, this.gameModel.players[i]));
 	}
 
+	this.placeholderRow = $('<tr><td class="NoPlayers">No players added yet</td></tr>').appendTo(this.tbody);
+	this.placeholderRow.find("td").attr('colspan', 2+this.gameModel.frameCount());
+	if (this.players.length)
+		this.placeholderRow.hide();
+
 	this.gameModel.callbacks.playerAdded.add(this.onPlayerAdded, this);
 	this.table.on('click', this.onClick);
 };
@@ -85,6 +90,7 @@ tenpin.view.ScoreTable.prototype.onClick = function(e){
 
 tenpin.view.ScoreTable.prototype.onPlayerAdded = function(newPlayer) {
 	this.players.push(new tenpin.view.ScoreTable_player(this.tbody, newPlayer));
+	this.placeholderRow.hide();
 }
 
 tenpin.view.ScoreTable_row = function(container, gameModel){
