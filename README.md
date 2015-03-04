@@ -8,7 +8,7 @@ It is written in Javascript, and is entirely client-side.
 <h2>Assumptions</h2>
 - Only one person/device will be keeping the score for each game, results for a game in progress do not need to be simultaneously displayed on other devices.
 - The browser will not crash or be accidentally closed. There is currently no saving facility, refreshing the browser window will clear all the data.
-- "up to 6 people" is assumed to a lower limit on how many people it must support, so this program does not currently limit the number of people.
+- "up to 6 people" is assumed to be a lower limit on how many people it must support, so this program does not currently limit the number of people.
 - Competitors are assumed to bowl in the same order as their names are entered. It is possible to enter scores in a different order, but it involves more clicking to switch between players.
 
 <h2>External libraries/programs used</h2>
@@ -28,7 +28,7 @@ Firefox - no setup required. This program can be accessed directly through a fil
 
 Chrome - either this program must be accessed via a web server (not via file:///), or less must be compiled outside the browser (due to security restrictions on accessing local files).
 
-IE8 and below - Respond.js (used for IE8 and older) doesn't seem to work with less.js - either compile less outside the browser, or remove Respond.js temporarily. Accessing via file:/// has not been tested.
+IE8 and below - Respond.js (used for IE8 and older only) doesn't seem to work with less.js - either compile less outside the browser, or remove Respond.js temporarily. Accessing via file:/// has not been tested.
 
 In production, compilation of less should be done at the time of deployment and style.less+less.js should be replaced with style.css in index.html.
 
@@ -36,5 +36,4 @@ In production, compilation of less should be done at the time of deployment and 
 - Looks ugly on IE6.
 - For IE6, the external Javascript libraries may need to be served from the same protocol as the tenpin page (HTTP page and HTTPS libraries don't seem to work). The protocol is specified for the libraries to make development easier (so it can be opened from file:/// and the libraries will still work and don't need downloading).
 - Data is not saved, closing/refreshing/crashing the browser will cause all data to be lost.
-- Backspace in ball score textbox does not trigger score table update
 

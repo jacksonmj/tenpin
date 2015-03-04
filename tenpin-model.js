@@ -304,14 +304,14 @@ tenpin.model.PlayerFrame.prototype.setBalls = function(scoreChanges){
 	this._checkBallScores(newScores); // (throws if a score is invalid)
 
 	// New scores are valid, store them
+	var oldScores = this._ballScores.slice();
 	this._ballScores = newScores;
 
 	// Notify of changes
 	for (i=0; i<this._ballScores.length; i++)
 	{
-		ballNumber = i+1;
-		if (typeof scoreChanges[ballNumber]!="undefined")
-			this.callbacks.ballScoreChanged.fire(scoreChanges[ballNumber], ballNumber, this);
+		if (oldScores[i] !== newScores[i])
+			this.callbacks.ballScoreChanged.fire(newScores[i], i+1, this);
 	}
 	this.player._checkForScoreChanges();
 	return this;

@@ -401,13 +401,13 @@ tenpin.view.FrameInput.prototype.focus = function(){
 
 // Textbox to edit a single ball score inside a tenpin.view.FrameInput
 tenpin.view.BallInput = function(container, frameInput){
-	this.onKeypress = tenpin.bind(this.onKeypress, this);
+	this.onKeydown = tenpin.bind(this.onKeydown, this);
 
 	this.frameInput = frameInput;
 	this.container = $('<div class="BallInput"></div>').appendTo(container);
 	this.label = $(document.createElement('label')).appendTo(this.container);
 	this.input = $('<input type="number" min="0" max="10" autocomplete="off">').appendTo(this.container);
-	this.input.on('keypress', this.onKeypress);
+	this.input.on('keydown', this.onKeydown);
 	this.setTargetBall(null, null);
 }
 // Set the frame and ball being edited by this textbox
@@ -491,7 +491,7 @@ tenpin.view.BallInput.prototype.onBallScoreChanged = function(newBallScore, whic
 	}
 }
 
-tenpin.view.BallInput.prototype.onKeypress = function(e){
+tenpin.view.BallInput.prototype.onKeydown = function(e){
 	if (e.keyCode===13) {
 		// turn enter keypress into tab ("advance to next input") if data entry for this frame is not finished
 		if (this.frameModel.isComplete())// finished data entry, submit is ok
