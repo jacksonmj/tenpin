@@ -1,11 +1,14 @@
 var tenpin = tenpin || {}
 
-tenpin.inheritPrototype = function(parentClass){// Object.create is not supported by old browsers
+// Return a prototype suitable for a child class inheriting from parentClass
+// (Object.create is not supported by old browsers)
+tenpin.inheritPrototype = function(parentClass){
 	var c = function (){};
 	c.prototype = parentClass.prototype;
 	return new c();
 };
 
+// add up all the elements in an array
 tenpin.arraySum = function(a){
 	var sum = 0, len = a.length;
 	for (var i=0; i<len; i++)
@@ -15,11 +18,14 @@ tenpin.arraySum = function(a){
 	return sum;
 }
 
-tenpin.isInteger = function(x){// returns true if x is an integer
+// returns true if x is an integer
+tenpin.isInteger = function(x){
 	return (Math.floor(+x)===x);
 }
 
-tenpin.bind = function(func,thisArg){// Function.bind is not supported by old browsers
+// Return a wrapper function to run func with this=thisArg
+// (Function.bind is not supported by old browsers)
+tenpin.bind = function(func,thisArg){
 	return function(){return func.apply(thisArg,arguments);};
 }
 
